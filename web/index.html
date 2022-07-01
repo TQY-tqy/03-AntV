@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height">
+    <title>Circle Packing</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;height:100%;margin:0;}</style>
+</head>
+<body>
+<div id="mountNode"></div>
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g2-3.5.1/dist/g2.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.data-set-0.10.1/dist/data-set.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
+<style>
+    #mountNode {
+        text-align: center;
+    }
+</style>
+<script>
+  $.getJSON('https://gw.alipayobjects.com/os/antvdemo/assets/data/flare.json', function(data) {
+    var dv = new DataSet.View().source(data, {
+      type: 'hierarchy'
+    });
+    dv.transform({
+      type: 'hierarchy.circle-packing'
+    });
+    var diameter = Math.min(window.innerWidth, window.innerHeight);
+    var chart = new G2.Chart({
+      container: 'mountNode',
+      height: diameter,
+      width: diameter,
+      padding: 0
+    });
+    chart.axis(false);
+    chart.legend(false);
+    chart.tooltip(false);
+
+    var nodes = dv.getAllNodes().map(function(node) {
+      return {
+        hasChildren: !!(node.data.children && node.data.children.length),
+        name: node.data.name.split(/(?=[A-Z][^A-Z])/g).join('\n'),
+        value: node.value,
+        depth: node.depth,
+        x: node.x,
+        y: node.y,
+        r: node.r
+      };
+    });
+
+    chart.source(nodes);
+    chart.point().position('x*y').color('hasChildren').shape('circle').tooltip('name').active(false).size('r', function(r) {
+      return r * diameter;
+    }).color('r', 'rgb(252, 253, 191)-rgb(231, 82, 99)-rgb(183, 55, 121)').style({
+      stroke: 'rgb(183, 55, 121)'
+    }).label('name', {
+      offset: 0,
+      textStyle: function textStyle(text, item) {
+        if (item.hasChildren) {
+          return {
+            opacity: 0
+          };
+        }
+        return {
+          textBaseline: 'middle',
+          fill: 'grey',
+          fontSize: 9,
+          textAlign: 'center'
+        };
+      }
+    });
+    chart.render();
+  });
+</script>
+</body>
+</html>
